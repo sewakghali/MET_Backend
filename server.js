@@ -34,18 +34,10 @@ let strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
 passport.use(strategy);
 app.use(passport.initialize());
 
-let payload = {
-  _id: user._id,
-  userName: user.userName,
-};
-
-let token = jwt.sign(payload, jwtOptions.secretOrKey);
-res.json({ message: 'login successful', token: token });
-
 app.use(express.json());
 app.use(cors());
 
-app.post("/api/user/register",passport.authenticate('jwt', { session: false }), (req, res) => {
+app.post("/api/user/register", (req, res) => {
     userService.registerUser(req.body)
     .then((msg) => {
         res.json({ "message": msg });
@@ -54,10 +46,18 @@ app.post("/api/user/register",passport.authenticate('jwt', { session: false }), 
     });
 });
 
-app.post("/api/user/login", passport.authenticate('jwt', { session: false }), (req, res) => {
+app.post("/api/user/login", (req, res) => {
     userService.checkUser(req.body)
     .then((user) => {
-        res.json({ "message": "login successful"});
+        // res.json({ "message": "login successful"});
+        let payload = {
+          _id: user._id,
+          userName: user.userName,
+        };
+        
+        let token = jwt.sign(payload, jwtOptions.secretOrKey);
+        res.json({ message: 'login successful', token: token });
+
     }).catch(msg => {
         res.status(422).json({ "message": msg });
     });
